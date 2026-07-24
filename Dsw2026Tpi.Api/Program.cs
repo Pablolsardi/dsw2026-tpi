@@ -33,7 +33,7 @@ public class Program
             builder.Services.AddHealthChecks();
 
             var app = builder.Build();
-
+            await app.SeedAdminUser();
             app.UseSerilogRequestLogging();
 
             if (app.Environment.IsProduction())
