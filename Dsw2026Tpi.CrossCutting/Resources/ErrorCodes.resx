@@ -126,6 +126,16 @@
   <data name="ENTITY_NOTFOUND" xml:space="preserve">
     <value>La entidad {0} no se encontró</value>
   </data>
+  <data name="PATIENT_DNI_CONFLICT" xml:space="preserve">
+    <value>El DNI ingresado ya está registrado con otro correo electrónico.</value>
+  </data>
+  <data name="PATIENT_LOGIN_CONFLICT" xml:space="preserve">
+    <value>No se pudo registrar el paciente.</value>
+  </data>
+  <data name="PATIENT_LOGIN_INVALID" xml:space="preserve">
+    <value>Los datos de acceso ingresados no son válidos.</value>
+    <comment>Email o DNI con formato inválido</comment>
+  </data>
   <data name="REGISTER_USER_CONFLICT" xml:space="preserve">
     <value>Se produjo un error al registrar el usuario</value>
   </data>
