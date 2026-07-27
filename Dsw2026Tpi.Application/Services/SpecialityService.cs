@@ -25,9 +25,9 @@ public class SpecialityService : ISpecialityService
         if (existente is not null)
         {
             if (!existente.Deleted)
-                throw new ConflictException(
-                    nameof(ErrorCodes.SPECIALITY_DUPLICATED),
-                    ErrorCodes.SPECIALITY_DUPLICATED);
+            {
+                throw new ConflictException(nameof(ErrorCodes.SPECIALITY_DUPLICATED), ErrorCodes.SPECIALITY_DUPLICATED);
+            }
 
             existente.Restore();
             existente.Update(request.Name, request.Description);
@@ -42,9 +42,16 @@ public class SpecialityService : ISpecialityService
         return ToResponse(speciality);
     }
 
-    public Task Delete(Guid id)
+    public async Task Delete(Guid id)
     {
-        throw new NotImplementedException();
+        var speciality = await _persistence.GetById<Speciality>(id);
+
+        if (speciality is null)
+        {
+            throw new EntityNotFoundException(nameof(Speciality));
+        }
+        speciality.Deleted = true;
+        await _persistence.Update(speciality);
     }
 
     public async Task<Pagination<SpecialityModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null)
@@ -58,9 +65,30 @@ public class SpecialityService : ISpecialityService
         return specialities.Map(ToResponse);
     }
 
-    public Task<SpecialityModel.Response> Update(Guid id, SpecialityModel.Request request)
+    public async Task<SpecialityModel.Response> Update(Guid id, SpecialityModel.Request request)
     {
-        throw new NotImplementedException();
+        Validate(request);
+
+        var speciality = await _persistence.GetById<Speciality>(id);
+        if (speciality is null)
+        {
+            throw new EntityNotFoundException(nameof(Speciality));
+        }
+
+        var duplicada = await _persistence.FirstIgnoringFilters<Speciality>(
+            s => s.Name == request.Name && s.Id != id);
+
+        if (duplicada is not null)
+        {
+            throw new ConflictException(
+                nameof(ErrorCodes.SPECIALITY_DUPLICATED),
+                ErrorCodes.SPECIALITY_DUPLICATED);
+        }
+
+        speciality.Update(request.Name, request.Description);
+        await _persistence.Update(speciality);
+
+        return ToResponse(speciality);
     }
 
     private static void Validate(SpecialityModel.Request request)
