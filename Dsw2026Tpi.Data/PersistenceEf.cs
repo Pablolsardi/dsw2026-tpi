@@ -104,6 +104,11 @@ public class PersistenceEf: IPersistence
         }
     }
 
+    public async Task<T?> FirstIgnoringFilters<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
+    {
+        return await _context.Set<T>().IgnoreQueryFilters().FirstOrDefaultAsync(predicate);
+    }
+
     private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : EntityBase
     {
         var includedQuery = query;
