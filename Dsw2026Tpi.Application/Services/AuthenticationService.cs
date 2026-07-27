@@ -5,8 +5,12 @@ using Dsw2026Tpi.CrossCutting.Helpers;
 using Dsw2026Tpi.CrossCutting.Identity;
 using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Data.Identity;
+using Dsw2026Tpi.Domain.Entities;
+using Dsw2026Tpi.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace Dsw2026Tpi.Application.Services;
 
@@ -17,18 +21,21 @@ public class AuthenticationService : IAuthenticationService
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly JwtService _jwtService;
     private readonly ILogger<AuthenticationService> _logger;
+    private readonly IPersistence _persistence;
 
     public AuthenticationService(UserManager<ApplicationUser> userManager,
         ISignInService signInManager,
         RoleManager<IdentityRole> roleManager,
         JwtService jwtService,
-        ILogger<AuthenticationService> logger)
+        ILogger<AuthenticationService> logger,
+        IPersistence persistence)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _jwtService = jwtService;
         _logger = logger;
+        _persistence = persistence;
     }
 
     public async Task<LoginAdminModel.Response> LoginAdmin(LoginAdminModel.Request request)
@@ -53,10 +60,58 @@ public class AuthenticationService : IAuthenticationService
         );
     }
 
-    public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Response request)
+
+    public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
-        throw new NotImplementedException();
+        if (!request.Email.IsEmailValid()) throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
+            nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
+
+        string dniStr = request.Dni.ToString();
+        if (dniStr.Length < 7 || dniStr.Length > 8)
+        {
+            throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
+            nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
+        }
+        var dni = request.Dni.ToString();
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null)
+        {
+            var dniEnUso = (await _persistence.GetFiltered<Patient>(p => p.Dni == dni)).Any();
+            if (dniEnUso)
+                throw new ConflictException(ErrorCodes.PATIENT_DNI_CONFLICT,
+                    nameof(ErrorCodes.PATIENT_DNI_CONFLICT));
+            user = new ApplicationUser { UserName = request.Email, Email = request.Email, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+            var result = await _userManager.CreateAsync(user);
+            if (!result.Succeeded)
+                throw new ConflictException(ErrorCodes.PATIENT_LOGIN_CONFLICT,
+                    nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT));
+            await _userManager.AddToRoleAsync(user, Roles.Patient);
+            try
+            {
+                await _persistence.Add(new Patient(user.Id, dni));
+            }
+            catch
+            {
+                await _userManager.DeleteAsync(user);
+                throw;
+            }
+            _logger.LogInformation("Paciente auto-registrado: {Email}", request.Email);
+        }
+        else
+        {
+            var patient = (await _persistence.GetFiltered<Patient>(p => p.UserId == user.Id)).FirstOrDefault();
+            if (patient is null || patient.Dni != dni)
+            {
+                _logger.LogWarning("Login de paciente fallido para: {Email}", request.Email);
+                throw new AuthenticationException();
+            }
+        }
+        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        var token = _jwtService.GenerateToken(user.UserName!, role);
+        _logger.LogInformation("Login de paciente exitoso: {Email}", request.Email);
+        return new LoginPatientModel.Response(token, role);
     }
+    
 
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
     {

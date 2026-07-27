@@ -88,6 +88,33 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El DNI ingresado ya está registrado con otro correo electrónico..
+        /// </summary>
+        public static string PATIENT_DNI_CONFLICT {
+            get {
+                return ResourceManager.GetString("PATIENT_DNI_CONFLICT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo registrar el paciente..
+        /// </summary>
+        public static string PATIENT_LOGIN_CONFLICT {
+            get {
+                return ResourceManager.GetString("PATIENT_LOGIN_CONFLICT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Los datos de acceso ingresados no son válidos..
+        /// </summary>
+        public static string PATIENT_LOGIN_INVALID {
+            get {
+                return ResourceManager.GetString("PATIENT_LOGIN_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Se produjo un error al registrar el usuario.
         /// </summary>
         public static string REGISTER_USER_CONFLICT {
