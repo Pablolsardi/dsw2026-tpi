@@ -75,6 +75,7 @@ public class AppointmentService : IAppointmentService
         {
             throw new ConflictException(nameof(ErrorCodes.APPOINTMENT_CONFLICT), ErrorCodes.APPOINTMENT_CONFLICT);
         }
+        _logger.LogInformation("Turno cancelado: {AppointmentId}", id);
     }
 
     public async Task<AppointmentModel.Response> Create(AppointmentModel.Request request)
