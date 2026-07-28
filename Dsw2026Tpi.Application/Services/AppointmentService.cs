@@ -33,7 +33,9 @@ public class AppointmentService : IAppointmentService
             "AvailabilitySlot.AvailabilityRule.Doctor.Speciality"
         };
 
-        var appointments = await _persistence.GetFiltered<Appointment>(a => a.Patient != null && a.Patient.Dni == dniString && a.Status == AppointmentStatus.Booked);
+        var appointments = await _persistence.GetFiltered<Appointment>(
+    a => a.Patient != null && a.Patient.Dni == dniString && a.Status == AppointmentStatus.Booked,
+    includes);
 
         if (appointments == null) return Array.Empty<AppointmentModel.Response>();
 
