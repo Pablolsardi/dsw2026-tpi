@@ -5,8 +5,10 @@ namespace Dsw2026Tpi.CrossCutting.Exceptions;
 /// </summary>
 public class BusinessRuleException : AppException
 {
-    public BusinessRuleException(string message, string errorCode)
+    // Convención: (errorCode, message)
+    public BusinessRuleException(string errorCode, string message)
         : base(message, errorCode)
     {
     }
+    
 }
