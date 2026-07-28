@@ -63,14 +63,14 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
-        if (!request.Email.IsEmailValid()) throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
-            nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
+        if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
+            ErrorCodes.PATIENT_LOGIN_INVALID);
 
         string dniStr = request.Dni.ToString();
         if (dniStr.Length < 7 || dniStr.Length > 8)
         {
-            throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
-            nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
+            throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
+            ErrorCodes.PATIENT_LOGIN_INVALID);
         }
         var dni = request.Dni.ToString();
         var user = await _userManager.FindByEmailAsync(request.Email);
@@ -78,13 +78,13 @@ public class AuthenticationService : IAuthenticationService
         {
             var dniEnUso = (await _persistence.GetFiltered<Patient>(p => p.Dni == dni)).Any();
             if (dniEnUso)
-                throw new ConflictException(ErrorCodes.PATIENT_DNI_CONFLICT,
-                    nameof(ErrorCodes.PATIENT_DNI_CONFLICT));
+                throw new ConflictException(nameof(ErrorCodes.PATIENT_DNI_CONFLICT),
+                    ErrorCodes.PATIENT_DNI_CONFLICT);
             user = new ApplicationUser { UserName = request.Email, Email = request.Email, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
             var result = await _userManager.CreateAsync(user);
             if (!result.Succeeded)
-                throw new ConflictException(ErrorCodes.PATIENT_LOGIN_CONFLICT,
-                    nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT));
+                throw new ConflictException(nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT),
+                    ErrorCodes.PATIENT_LOGIN_CONFLICT);
             await _userManager.AddToRoleAsync(user, Roles.Patient);
             try
             {
@@ -115,8 +115,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
     {
-        if (!request.Email.IsEmailValid()) throw new ValidationException(ErrorCodes.REGISTER_USER_INVALID,
-            nameof(ErrorCodes.REGISTER_USER_INVALID));
+        if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.REGISTER_USER_INVALID),
+            ErrorCodes.REGISTER_USER_INVALID);
 
         var user = new ApplicationUser
         {

@@ -119,4 +119,18 @@ public class PersistenceEf: IPersistence
         }
         return includedQuery;
     }
+    public async Task ExecuteInTransaction(Func<Task> operations)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            await operations();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

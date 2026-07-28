@@ -14,4 +14,5 @@ public interface IPersistence
     Task<T> Delete<T>(T entity) where T : EntityBase;
     Task<Pagination<T>> Paginate<T, TKey>(int pageSize, int pageIndex, Expression<Func<T, bool>> predicate, Expression<Func<T, TKey>> sortOrder, params string[] includes) where T : EntityBase;
     Task<T?> FirstIgnoringFilters<T>(Expression<Func<T, bool>> predicate) where T : EntityBase;
+    Task ExecuteInTransaction(Func<Task> operations);
 }
