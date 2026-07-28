@@ -61,6 +61,42 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Solo se pueden cancelar turnos en estado reservado.
+        /// </summary>
+        public static string APPOINTMENT_CANCEL_INVALID {
+            get {
+                return ResourceManager.GetString("APPOINTMENT_CANCEL_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El turno ya fue reservado por otro paciente..
+        /// </summary>
+        public static string APPOINTMENT_CONFLICT {
+            get {
+                return ResourceManager.GetString("APPOINTMENT_CONFLICT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se pueden reservar turnos en fechas u horarios pasados.
+        /// </summary>
+        public static string APPOINTMENT_PAST_DATE {
+            get {
+                return ResourceManager.GetString("APPOINTMENT_PAST_DATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El horario seleccionado no corresponde al médico indicado.
+        /// </summary>
+        public static string APPOINTMENT_SLOT_MISMATCH {
+            get {
+                return ResourceManager.GetString("APPOINTMENT_SLOT_MISMATCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Usuario o contraseña incorrectos.
         /// </summary>
         public static string AUTHENTICATION_FAILED {
