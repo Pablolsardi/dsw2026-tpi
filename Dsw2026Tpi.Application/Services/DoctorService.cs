@@ -29,7 +29,7 @@ public class DoctorService : IDoctorService
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
         {
-            throw new ValidationException("El nombre debe tener entre 3 y 100 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR)); 
+            throw new ValidationException("El nombre debe tener entre 3 y 100 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
         }
 
         var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
@@ -70,4 +70,16 @@ public class DoctorService : IDoctorService
         return new DoctorModel.Response(doctor.Id, doctor.Name, doctor.LicenseNumber,
             new DoctorModel.SpecialityDto(speciality.Id, speciality.Name));
     }
+
+    public async Task Delete(Guid id)
+    {
+        var doctor = await _persistence.GetById<Doctor>(id);
+        if (doctor == null)
+        {
+            throw new EntityNotFoundException(nameof(Doctor));
+        }
+        doctor.Deleted = true;
+        await _persistence.Update(doctor);
+    }
+
 }
