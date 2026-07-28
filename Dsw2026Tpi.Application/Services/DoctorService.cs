@@ -29,7 +29,7 @@ public class DoctorService : IDoctorService
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
         {
-            throw new ValidationException("El nombre debe tener entre 3 y 100 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
+            throw new ValidationException(nameof(ErrorCodes.VALIDATION_ERROR), "El nombre debe tener entre 3 y 100 caracteres.");
         }
 
         var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
@@ -49,7 +49,7 @@ public class DoctorService : IDoctorService
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
         {
-            throw new ValidationException("El nombre debe tener entre 3 y 100 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
+            throw new ValidationException(nameof(ErrorCodes.VALIDATION_ERROR), "El nombre debe tener entre 3 y 100 caracteres.");
         }
 
         var doctor = await _persistence.GetById<Doctor>(id);
