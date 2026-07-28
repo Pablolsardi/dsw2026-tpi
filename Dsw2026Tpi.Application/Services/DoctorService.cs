@@ -44,4 +44,30 @@ public class DoctorService : IDoctorService
         return new DoctorModel.Response(doctor.Id, doctor.Name, doctor.LicenseNumber,
             new DoctorModel.SpecialityDto(speciality.Id, speciality.Name));
     }
+
+    public async Task<DoctorModel.Response> Update(Guid id, DoctorModel.Request request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
+        {
+            throw new ValidationException("El nombre debe tener entre 3 y 100 caracteres.", nameof(ErrorCodes.VALIDATION_ERROR));
+        }
+
+        var doctor = await _persistence.GetById<Doctor>(id);
+        if (doctor == null)
+        {
+            throw new EntityNotFoundException(nameof(Doctor));
+        }
+
+        var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
+        if (speciality == null)
+        {
+            throw new EntityNotFoundException(nameof(Speciality));
+        }
+
+        doctor.Update(request.Name, request.LicenseNumber, speciality);
+        await _persistence.Update(doctor);
+
+        return new DoctorModel.Response(doctor.Id, doctor.Name, doctor.LicenseNumber,
+            new DoctorModel.SpecialityDto(speciality.Id, speciality.Name));
+    }
 }
