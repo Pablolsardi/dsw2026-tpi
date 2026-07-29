@@ -135,6 +135,9 @@
   <data name="AUTHORIZATION_FAILED" xml:space="preserve">
     <value>Se requieren permisos para la operación solicitada</value>
   </data>
+  <data name="DOCTOR_NAME_INVALID" xml:space="preserve">
+    <value>El nombre debe tener entre 3 y 100 caracteres</value>
+  </data>
   <data name="ENTITY_NOTFOUND" xml:space="preserve">
     <value>La entidad {0} no se encontró</value>
   </data>

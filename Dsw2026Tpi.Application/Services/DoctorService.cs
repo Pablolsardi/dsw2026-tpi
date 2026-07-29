@@ -21,16 +21,13 @@ public class DoctorService : IDoctorService
         var doctors = await _persistence.Paginate<Doctor, string>(pageSize, pageIndex, d => string.IsNullOrWhiteSpace(name) ||
                                                    d.Name.Contains(name), x => x.Name, nameof(Doctor.Speciality));
 
-        return doctors.Map(d => new DoctorModel.Response(d.Id, d.Name, d.LicenseNumber,
-            new DoctorModel.SpecialityDto(d.Speciality?.Id, d.Speciality?.Name)));
+        return doctors.Map(ToResponse);
     }
+
 
     public async Task<DoctorModel.Response> Create(DoctorModel.Request request)
     {
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
-        {
-            throw new ValidationException(nameof(ErrorCodes.VALIDATION_ERROR), "El nombre debe tener entre 3 y 100 caracteres.");
-        }
+        Validate(request);
 
         var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
         if (speciality == null)
@@ -41,16 +38,13 @@ public class DoctorService : IDoctorService
         var doctor = new Doctor(request.Name, request.LicenseNumber, speciality);
         await _persistence.Add(doctor);
 
-        return new DoctorModel.Response(doctor.Id, doctor.Name, doctor.LicenseNumber,
-            new DoctorModel.SpecialityDto(speciality.Id, speciality.Name));
+        return ToResponse(doctor);
     }
+
 
     public async Task<DoctorModel.Response> Update(Guid id, DoctorModel.Request request)
     {
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
-        {
-            throw new ValidationException(nameof(ErrorCodes.VALIDATION_ERROR), "El nombre debe tener entre 3 y 100 caracteres.");
-        }
+        Validate(request);
 
         var doctor = await _persistence.GetById<Doctor>(id);
         if (doctor == null)
@@ -66,10 +60,10 @@ public class DoctorService : IDoctorService
 
         doctor.Update(request.Name, request.LicenseNumber, speciality);
         await _persistence.Update(doctor);
-
-        return new DoctorModel.Response(doctor.Id, doctor.Name, doctor.LicenseNumber,
-            new DoctorModel.SpecialityDto(speciality.Id, speciality.Name));
+    
+        return ToResponse(doctor);
     }
+
 
     public async Task Delete(Guid id)
     {
@@ -82,4 +76,25 @@ public class DoctorService : IDoctorService
         await _persistence.Update(doctor);
     }
 
+
+
+
+
+    private static void Validate(DoctorModel.Request request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
+        {
+            throw new ValidationException(nameof(ErrorCodes.DOCTOR_NAME_INVALID), ErrorCodes.DOCTOR_NAME_INVALID)
+                .WithDetail("name", "length_between_3_and_100");
+        }
+    }
+
+
+
+
+    private static DoctorModel.Response ToResponse(Doctor doctor)
+        => new(doctor.Id, doctor.Name, doctor.LicenseNumber,
+            new DoctorModel.SpecialityDto(doctor.Speciality?.Id, doctor.Speciality?.Name));
+ 
 }
+
