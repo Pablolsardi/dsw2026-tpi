@@ -47,12 +47,11 @@ public class AppointmentService : IAppointmentService
 
     public async Task Cancel(Guid id)
     {
-        // obtener y validar existencia
         var appointment = await _persistence.GetById<Appointment>(id);
         if (appointment == null)
             throw new EntityNotFoundException(nameof(Appointment));
 
-        // solo se puede cancelar si está reservado
+
         if (appointment.Status != AppointmentStatus.Booked)
             throw new BusinessRuleException(nameof(ErrorCodes.APPOINTMENT_CANCEL_INVALID), ErrorCodes.APPOINTMENT_CANCEL_INVALID);
         var slot = await _persistence.GetById<AvailabilitySlot>(appointment.AvailabilitySlotId)
@@ -80,7 +79,7 @@ public class AppointmentService : IAppointmentService
 
     public async Task<AppointmentModel.Response> Create(AppointmentModel.Request request)
     {
-        // FASE 1: validaciones (reason, dni) => ValidationException
+
         var errors = new List<(string, string)>();
 
         if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length < 5)
@@ -92,38 +91,40 @@ public class AppointmentService : IAppointmentService
 
         if (errors.Count > 0)
             throw (ValidationException)new ValidationException().WithDetail(errors);
-        // FASE 2: existencia (doctor, patient por dni, slot y que sea del doctor)
-        //         => EntityNotFoundException / ValidationException
 
-        // doctor
+
+
         var doctor = await _persistence.GetById<Doctor>(request.DoctorId, nameof(Doctor.Speciality));
         if (doctor == null)
             throw new EntityNotFoundException(nameof(Doctor));
 
-        // patient por dni (el DTO usa long para dni, la entidad almacena string)
+
+
         var dniString = request.Patient.Dni.ToString();
         var patient = await _persistence.First<Patient>(p => p.Dni == dniString);
         if (patient == null)
             throw new EntityNotFoundException(nameof(Patient));
 
-        // slot
+  
+
         var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilityId);
         if (slot == null)
             throw new EntityNotFoundException(nameof(AvailabilitySlot));
 
-        // comprobar que el slot pertenece al doctor solicitado
+
+
         if (slot.DoctorId != request.DoctorId)
             throw (ValidationException)new ValidationException().WithDetail(new[] { (nameof(request.AvailabilityId), nameof(ErrorCodes.APPOINTMENT_SLOT_MISMATCH)) });
 
-        // FASE 3: reglas de negocio (slot Available, fecha futura)
-        // slot debe estar disponible
+
+
         if (slot.Status != SlotStatus.Available)
             throw new ConflictException(nameof(ErrorCodes.APPOINTMENT_CONFLICT), ErrorCodes.APPOINTMENT_CONFLICT);
         var slotDateTime = slot.SlotDate.ToDateTime(slot.StartTime);
         if (slotDateTime <= DateTime.Now)
             throw new BusinessRuleException(nameof(ErrorCodes.APPOINTMENT_PAST_DATE), ErrorCodes.APPOINTMENT_PAST_DATE);
 
-        // FASE 4: reservar
+
         var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
 
         try

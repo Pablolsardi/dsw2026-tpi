@@ -115,6 +115,15 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El nombre debe tener entre 3 y 100 caracteres.
+        /// </summary>
+        public static string DOCTOR_NAME_INVALID {
+            get {
+                return ResourceManager.GetString("DOCTOR_NAME_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a La entidad {0} no se encontró.
         /// </summary>
         public static string ENTITY_NOTFOUND {
