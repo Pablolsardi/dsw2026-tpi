@@ -55,4 +55,13 @@ public class DoctorController : AppController
         await _service.Delete(id);
         return NoContent();
     }
+
+    [HttpGet("{id}/availabilities")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAvailabilities([FromRoute] Guid id)
+    {
+        var result = await _service.GetAvailabilities(id);
+        return Ok(result);
+    }
 }
