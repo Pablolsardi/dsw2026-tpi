@@ -42,6 +42,7 @@ public class DoctorService : IDoctorService
     }
 
 
+
     public async Task<DoctorModel.Response> Update(Guid id, DoctorModel.Request request)
     {
         Validate(request);
@@ -60,7 +61,7 @@ public class DoctorService : IDoctorService
 
         doctor.Update(request.Name, request.LicenseNumber, speciality);
         await _persistence.Update(doctor);
-    
+
         return ToResponse(doctor);
     }
 
@@ -77,6 +78,27 @@ public class DoctorService : IDoctorService
     }
 
 
+    public async Task<IEnumerable<DoctorModel.AvailabilityResponse>> GetAvailabilities(Guid id)
+    {
+        var doctor = await _persistence.GetById<Doctor>(id);
+        if (doctor == null)
+        {
+            throw new EntityNotFoundException(nameof(Doctor));
+        }
+
+        var hoy = DateTime.UtcNow;
+        var rules = await _persistence.GetFiltered<AvailabilityRule>(
+            r => r.DoctorId == id && r.Month == (byte)hoy.Month && r.Year == (short)hoy.Year);
+
+        if (rules == null) return Array.Empty<DoctorModel.AvailabilityResponse>();
+
+        return rules.Select(r => new DoctorModel.AvailabilityResponse(
+            r.Id,
+            ToSpanishDay(r.DayOfWeek),
+            r.StartTime.ToString("HH:mm"),
+            r.EndTime.ToString("HH:mm")
+        )).ToList();
+    }
 
 
 
@@ -95,6 +117,19 @@ public class DoctorService : IDoctorService
     private static DoctorModel.Response ToResponse(Doctor doctor)
         => new(doctor.Id, doctor.Name, doctor.LicenseNumber,
             new DoctorModel.SpecialityDto(doctor.Speciality?.Id, doctor.Speciality?.Name));
- 
+
+
+    private static string ToSpanishDay(DayOfWeek dayOfWeek) => dayOfWeek switch
+    {
+        DayOfWeek.Monday => "LUNES",
+        DayOfWeek.Tuesday => "MARTES",
+        DayOfWeek.Wednesday => "MIÉRCOLES",
+        DayOfWeek.Thursday => "JUEVES",
+        DayOfWeek.Friday => "VIERNES",
+        DayOfWeek.Saturday => "SÁBADO",
+        DayOfWeek.Sunday => "DOMINGO",
+        _ => string.Empty
+    };
+
 }
 

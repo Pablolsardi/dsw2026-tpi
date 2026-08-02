@@ -48,11 +48,20 @@ public class DoctorController : AppController
 
 
     [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         await _service.Delete(id);
-        return NoContent();
+        return Ok("ok");
+    }
+
+    [HttpGet("{id}/availabilities")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAvailabilities([FromRoute] Guid id)
+    {
+        var result = await _service.GetAvailabilities(id);
+        return Ok(result);
     }
 }
