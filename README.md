@@ -1,7 +1,12 @@
 # Trabajo Práctico Integrador
 ## Desarrollo de Software 2026
 
-Acceso al [documento](https://frtutneduar-my.sharepoint.com/:b:/g/personal/franciscovicente_doc_frt_utn_edu_ar/IQD-5kaAARqnT5eL7EnPMCPgAX2LFXXX6e3p-u1C43z5rsQ?e=lbbpnz)
+
+### Integrantes
+- Litninsky, José Ignacio - 56710
+- López Roldán, Fabrizzio Javier - 56450
+- López Sardi, Pablo - 56037
+- Luna Mendoza, Diego Elías - 56142
 
 Instrucciones:
 * Realizar una bifurcación por grupo
@@ -14,3 +19,4 @@ Instrucciones:
 * Tener en cuenta que ya se realizaron las migraciones de Identity, crear nuevas de ser necesario
 * Para más detalles, revisar la grabación de la última clase
 * El endpoint de registración de usuarios administradores está disponible para crear usuarios y poder hacer pruebas, a futuro se eliminará
+

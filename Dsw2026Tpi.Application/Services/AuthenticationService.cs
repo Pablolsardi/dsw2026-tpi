@@ -22,7 +22,6 @@ public class AuthenticationService : IAuthenticationService
     private readonly JwtService _jwtService;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly IPersistence _persistence;
-
     public AuthenticationService(UserManager<ApplicationUser> userManager,
         ISignInService signInManager,
         RoleManager<IdentityRole> roleManager,
@@ -37,7 +36,6 @@ public class AuthenticationService : IAuthenticationService
         _logger = logger;
         _persistence = persistence;
     }
-
     public async Task<LoginAdminModel.Response> LoginAdmin(LoginAdminModel.Request request)
     {
         if (!request.Email.IsEmailValid()) throw new AuthenticationException();
@@ -53,14 +51,8 @@ public class AuthenticationService : IAuthenticationService
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
         var token  = _jwtService.GenerateToken(user.UserName!, role);
-
-        return new LoginAdminModel.Response(
-            token,
-            role
-        );
+        return new LoginAdminModel.Response(token, role?.ToUpperInvariant());
     }
-
-
     public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
         if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
@@ -109,10 +101,9 @@ public class AuthenticationService : IAuthenticationService
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         var token = _jwtService.GenerateToken(user.UserName!, role);
         _logger.LogInformation("Login de paciente exitoso: {Email}", request.Email);
-        return new LoginPatientModel.Response(token, role);
+        return new LoginPatientModel.Response(token, role?.ToUpperInvariant());
     }
     
-
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
     {
         if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.REGISTER_USER_INVALID),
