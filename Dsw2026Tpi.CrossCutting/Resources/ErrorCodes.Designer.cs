@@ -115,6 +115,15 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo guardar la disponibilidad por un conflicto con datos existentes.
+        /// </summary>
+        public static string AVAILABILITY_CONFLICT {
+            get {
+                return ResourceManager.GetString("AVAILABILITY_CONFLICT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a El nombre debe tener entre 3 y 100 caracteres.
         /// </summary>
         public static string DOCTOR_NAME_INVALID {
