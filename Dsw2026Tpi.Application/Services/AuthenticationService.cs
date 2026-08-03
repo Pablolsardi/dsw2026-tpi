@@ -49,50 +49,64 @@ public class AuthenticationService : IAuthenticationService
         }
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
-
         var token  = _jwtService.GenerateToken(user.UserName!, role);
         return new LoginAdminModel.Response(token, role?.ToUpperInvariant());
     }
     public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
+
         if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
             ErrorCodes.PATIENT_LOGIN_INVALID);
 
-        string dniStr = request.Dni.ToString();
-        if (dniStr.Length < 7 || dniStr.Length > 8)
+        if (request.Dni is < 1_000_000 or > 99_999_999)
         {
             throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
             ErrorCodes.PATIENT_LOGIN_INVALID);
         }
+
         var dni = request.Dni.ToString();
         var user = await _userManager.FindByEmailAsync(request.Email);
+
         if (user is null)
         {
-            var dniEnUso = (await _persistence.GetFiltered<Patient>(p => p.Dni == dni)).Any();
-            if (dniEnUso)
+            var dniEnUso = await _persistence.FirstIgnoringFilters<Patient>(p => p.Dni == dni);
+            if (dniEnUso is not null)
                 throw new ConflictException(nameof(ErrorCodes.PATIENT_DNI_CONFLICT),
                     ErrorCodes.PATIENT_DNI_CONFLICT);
-            user = new ApplicationUser { UserName = request.Email, Email = request.Email, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+            user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
             var result = await _userManager.CreateAsync(user);
             if (!result.Succeeded)
                 throw new ConflictException(nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT),
                     ErrorCodes.PATIENT_LOGIN_CONFLICT);
-            await _userManager.AddToRoleAsync(user, Roles.Patient);
+
             try
             {
+                var rolAniadido = await _userManager.AddToRoleAsync(user, Roles.Patient);
+                if (!rolAniadido.Succeeded)
+                    throw new ConflictException(nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT),
+                        ErrorCodes.PATIENT_LOGIN_CONFLICT);
+
                 await _persistence.Add(new Patient(user.Id, dni));
             }
             catch
             {
-                await _userManager.DeleteAsync(user);
+                var rollback = await _userManager.DeleteAsync(user);
+                if (!rollback.Succeeded)
+                    _logger.LogError("Rollback fallido, usuario huérfano: {Email}", request.Email);
                 throw;
             }
             _logger.LogInformation("Paciente auto-registrado: {Email}", request.Email);
         }
         else
         {
-            var patient = (await _persistence.GetFiltered<Patient>(p => p.UserId == user.Id)).FirstOrDefault();
-            if (patient is null || patient.Dni != dni)
+            var patient = await _persistence.FirstIgnoringFilters<Patient>(p => p.UserId == user.Id);
+            if (patient is null || patient.Deleted || patient.Dni != dni)
             {
                 _logger.LogWarning("Login de paciente fallido para: {Email}", request.Email);
                 throw new AuthenticationException();
@@ -101,9 +115,9 @@ public class AuthenticationService : IAuthenticationService
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         var token = _jwtService.GenerateToken(user.UserName!, role);
         _logger.LogInformation("Login de paciente exitoso: {Email}", request.Email);
-        return new LoginPatientModel.Response(token, role?.ToUpperInvariant());
+        return new LoginPatientModel.Response(token, role);
     }
-    
+
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
     {
         if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.REGISTER_USER_INVALID),
@@ -122,7 +136,7 @@ public class AuthenticationService : IAuthenticationService
         if (!result.Succeeded) throw new ConflictException(nameof(ErrorCodes.REGISTER_USER_CONFLICT),
             ErrorCodes.REGISTER_USER_CONFLICT)
                 .WithDetail(result.Errors.Select(e => (e.Code, e.Description)));
-       
+
         _ = await _userManager.AddToRoleAsync(user, Roles.Administrator);
 
         _logger.LogInformation("Usuario registrado: {Email}", request.Email);

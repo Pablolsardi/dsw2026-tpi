@@ -77,13 +77,11 @@ public class PersistenceEf: IPersistence
             return new Pagination<T>(pageSize, pageIndex, total, data);
         }
         
-        //la pagina existe
         if (total > pageSize * pageIndex)
         {
             return await GetPage(pageIndex * pageSize, pageSize);
         }
 
-        //solo hay una pagina
         if (total < pageSize)
         {
             return new Pagination<T>(pageSize, pageIndex, total, await filtered.ToListAsync());
@@ -109,16 +107,6 @@ public class PersistenceEf: IPersistence
         return await _context.Set<T>().IgnoreQueryFilters().FirstOrDefaultAsync(predicate);
     }
 
-    private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : EntityBase
-    {
-        var includedQuery = query;
-
-        foreach (var include in includes)
-        {
-            includedQuery = includedQuery.Include(include);
-        }
-        return includedQuery;
-    }
     public async Task ExecuteInTransaction(Func<Task> operations)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -132,5 +120,21 @@ public class PersistenceEf: IPersistence
             await transaction.RollbackAsync();
             throw;
         }
+    }
+    public async Task<IEnumerable<T>> AddRange<T>(IEnumerable<T> entities) where T : EntityBase
+    {
+        await _context.AddRangeAsync(entities);
+        await _context.SaveChangesAsync();
+        return entities;
+    }
+    private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : EntityBase
+    {
+        var includedQuery = query;
+
+        foreach (var include in includes)
+        {
+            includedQuery = includedQuery.Include(include);
+        }
+        return includedQuery;
     }
 }
