@@ -38,6 +38,6 @@ public class AppointmentController : AppController
     public async Task<IActionResult> Cancel(Guid id)
     {
         await _service.Cancel(id);
-        return NoContent();
+        return Ok("Ok");
     }
 }

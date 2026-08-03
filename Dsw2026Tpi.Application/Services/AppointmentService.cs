@@ -13,13 +13,11 @@ public class AppointmentService : IAppointmentService
 {
     private readonly IPersistence _persistence;
     private readonly ILogger<AppointmentService> _logger;
-
     public AppointmentService(IPersistence persistence, ILogger<AppointmentService> logger)
     {
         _persistence = persistence;
         _logger = logger;
     }
-
     public async Task<IEnumerable<AppointmentModel.Response>> GetByPatientDni(long dni)
     {
         var dniString = dni.ToString();
@@ -44,14 +42,11 @@ public class AppointmentService : IAppointmentService
             .Select(a => ToResponse(a, a.AvailabilitySlot!, a.AvailabilitySlot!.AvailabilityRule!.Doctor!))
             .ToList();
     }
-
     public async Task Cancel(Guid id)
     {
         var appointment = await _persistence.GetById<Appointment>(id);
         if (appointment == null)
             throw new EntityNotFoundException(nameof(Appointment));
-
-
         if (appointment.Status != AppointmentStatus.Booked)
             throw new BusinessRuleException(nameof(ErrorCodes.APPOINTMENT_CANCEL_INVALID), ErrorCodes.APPOINTMENT_CANCEL_INVALID);
         var slot = await _persistence.GetById<AvailabilitySlot>(appointment.AvailabilitySlotId)
@@ -88,45 +83,26 @@ public class AppointmentService : IAppointmentService
         var dniLength = request.Patient.Dni.ToString().Length;
         if (dniLength < 7 || dniLength > 10)
             errors.Add((nameof(request.Patient.Dni), "length_between_7_and_10"));
-
         if (errors.Count > 0)
             throw (ValidationException)new ValidationException().WithDetail(errors);
-
-
-
         var doctor = await _persistence.GetById<Doctor>(request.DoctorId, nameof(Doctor.Speciality));
         if (doctor == null)
             throw new EntityNotFoundException(nameof(Doctor));
-
-
-
         var dniString = request.Patient.Dni.ToString();
         var patient = await _persistence.First<Patient>(p => p.Dni == dniString);
         if (patient == null)
             throw new EntityNotFoundException(nameof(Patient));
-
-  
-
-        var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilityId);
+        var slot = await _persistence.GetById<AvailabilitySlot>(request.AvailabilitySlotId);
         if (slot == null)
             throw new EntityNotFoundException(nameof(AvailabilitySlot));
-
-
-
         if (slot.DoctorId != request.DoctorId)
-            throw (ValidationException)new ValidationException().WithDetail(new[] { (nameof(request.AvailabilityId), nameof(ErrorCodes.APPOINTMENT_SLOT_MISMATCH)) });
-
-
-
+            throw (ValidationException)new ValidationException().WithDetail(new[] { (nameof(request.AvailabilitySlotId), nameof(ErrorCodes.APPOINTMENT_SLOT_MISMATCH)) });
         if (slot.Status != SlotStatus.Available)
             throw new ConflictException(nameof(ErrorCodes.APPOINTMENT_CONFLICT), ErrorCodes.APPOINTMENT_CONFLICT);
         var slotDateTime = slot.SlotDate.ToDateTime(slot.StartTime);
         if (slotDateTime <= DateTime.Now)
             throw new BusinessRuleException(nameof(ErrorCodes.APPOINTMENT_PAST_DATE), ErrorCodes.APPOINTMENT_PAST_DATE);
-
-
         var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
-
         try
         {
             await _persistence.ExecuteInTransaction(async () =>
@@ -154,14 +130,19 @@ public class AppointmentService : IAppointmentService
     {
         return new AppointmentModel.Response(
             appointment.Id,
+            appointment.AvailabilitySlotId,
             slot.SlotDate,
             slot.StartTime,
             slot.EndTime,
             doctor.Name,
             doctor.Speciality?.Name,
-            appointment.Status.ToString(),
+            ToStatusText(appointment.Status),
             appointment.Reason);
     }
+    private static string ToStatusText(AppointmentStatus status) => status switch
+    {
+        AppointmentStatus.NoShow => "NO_SHOW",
+        _ => status.ToString().ToUpperInvariant()
+    };
 
-    
 }
