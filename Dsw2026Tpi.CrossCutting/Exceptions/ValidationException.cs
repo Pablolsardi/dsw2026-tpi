@@ -15,7 +15,8 @@ public class ValidationException : AppException
     {
     }
 
-    public ValidationException(string message, string errorCode)
+    // Convención: (errorCode, message)
+    public ValidationException(string errorCode, string message)
         : base(message, errorCode)
     {
     }

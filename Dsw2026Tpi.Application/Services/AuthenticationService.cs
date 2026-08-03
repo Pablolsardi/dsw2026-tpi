@@ -22,7 +22,6 @@ public class AuthenticationService : IAuthenticationService
     private readonly JwtService _jwtService;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly IPersistence _persistence;
-
     public AuthenticationService(UserManager<ApplicationUser> userManager,
         ISignInService signInManager,
         RoleManager<IdentityRole> roleManager,
@@ -37,7 +36,6 @@ public class AuthenticationService : IAuthenticationService
         _logger = logger;
         _persistence = persistence;
     }
-
     public async Task<LoginAdminModel.Response> LoginAdmin(LoginAdminModel.Request request)
     {
         if (!request.Email.IsEmailValid()) throw new AuthenticationException();
@@ -52,21 +50,29 @@ public class AuthenticationService : IAuthenticationService
 
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
 
+<<<<<<< HEAD
         var token = _jwtService.GenerateToken(user.UserName!, role);
 
         return new LoginAdminModel.Response(
             token,
             role
         );
+=======
+        var token  = _jwtService.GenerateToken(user.UserName!, role);
+        return new LoginAdminModel.Response(token, role?.ToUpperInvariant());
+>>>>>>> development
     }
-
-
     public async Task<LoginPatientModel.Response> LoginPatient(LoginPatientModel.Request request)
     {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         if (!request.Email.IsEmailValid()) throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
             nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
 =======
+=======
+        if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
+            ErrorCodes.PATIENT_LOGIN_INVALID);
+>>>>>>> development
 
         if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
             ErrorCodes.PATIENT_LOGIN_INVALID);
@@ -74,8 +80,8 @@ public class AuthenticationService : IAuthenticationService
 
         if (request.Dni is < 1_000_000 or > 99_999_999)
         {
-            throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID,
-            nameof(ErrorCodes.PATIENT_LOGIN_INVALID));
+            throw new ValidationException(nameof(ErrorCodes.PATIENT_LOGIN_INVALID),
+            ErrorCodes.PATIENT_LOGIN_INVALID);
         }
 
         var dni = request.Dni.ToString();
@@ -86,13 +92,13 @@ public class AuthenticationService : IAuthenticationService
 <<<<<<< Updated upstream
             var dniEnUso = (await _persistence.GetFiltered<Patient>(p => p.Dni == dni)).Any();
             if (dniEnUso)
-                throw new ConflictException(ErrorCodes.PATIENT_DNI_CONFLICT,
-                    nameof(ErrorCodes.PATIENT_DNI_CONFLICT));
+                throw new ConflictException(nameof(ErrorCodes.PATIENT_DNI_CONFLICT),
+                    ErrorCodes.PATIENT_DNI_CONFLICT);
             user = new ApplicationUser { UserName = request.Email, Email = request.Email, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
             var result = await _userManager.CreateAsync(user);
             if (!result.Succeeded)
-                throw new ConflictException(ErrorCodes.PATIENT_LOGIN_CONFLICT,
-                    nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT));
+                throw new ConflictException(nameof(ErrorCodes.PATIENT_LOGIN_CONFLICT),
+                    ErrorCodes.PATIENT_LOGIN_CONFLICT);
             await _userManager.AddToRoleAsync(user, Roles.Patient);
 =======
             var dniEnUso = await _persistence.FirstIgnoringFilters<Patient>(p => p.Dni == dni);
@@ -142,14 +148,18 @@ public class AuthenticationService : IAuthenticationService
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         var token = _jwtService.GenerateToken(user.UserName!, role);
         _logger.LogInformation("Login de paciente exitoso: {Email}", request.Email);
-        return new LoginPatientModel.Response(token, role);
+        return new LoginPatientModel.Response(token, role?.ToUpperInvariant());
     }
+<<<<<<< HEAD
 
 
+=======
+    
+>>>>>>> development
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)
     {
-        if (!request.Email.IsEmailValid()) throw new ValidationException(ErrorCodes.REGISTER_USER_INVALID,
-            nameof(ErrorCodes.REGISTER_USER_INVALID));
+        if (!request.Email.IsEmailValid()) throw new ValidationException(nameof(ErrorCodes.REGISTER_USER_INVALID),
+            ErrorCodes.REGISTER_USER_INVALID);
 
         var user = new ApplicationUser
         {
