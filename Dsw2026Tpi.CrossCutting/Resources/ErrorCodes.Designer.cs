@@ -115,6 +115,15 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se pudo guardar la disponibilidad por un conflicto con datos existentes.
+        /// </summary>
+        public static string AVAILABILITY_CONFLICT {
+            get {
+                return ResourceManager.GetString("AVAILABILITY_CONFLICT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a El nombre debe tener entre 3 y 100 caracteres.
         /// </summary>
         public static string DOCTOR_NAME_INVALID {
@@ -183,6 +192,15 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         public static string SPECIALITY_DUPLICATED {
             get {
                 return ResourceManager.GetString("SPECIALITY_DUPLICATED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Demasiadas solicitudes. Intente nuevamente más tarde..
+        /// </summary>
+        public static string TOO_MANY_REQUESTS {
+            get {
+                return ResourceManager.GetString("TOO_MANY_REQUESTS", resourceCulture);
             }
         }
         

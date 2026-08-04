@@ -135,6 +135,9 @@
   <data name="AUTHORIZATION_FAILED" xml:space="preserve">
     <value>Se requieren permisos para la operación solicitada</value>
   </data>
+  <data name="AVAILABILITY_CONFLICT" xml:space="preserve">
+    <value>No se pudo guardar la disponibilidad por un conflicto con datos existentes</value>
+  </data>
   <data name="DOCTOR_NAME_INVALID" xml:space="preserve">
     <value>El nombre debe tener entre 3 y 100 caracteres</value>
   </data>
@@ -159,6 +162,9 @@
   </data>
   <data name="SPECIALITY_DUPLICATED" xml:space="preserve">
     <value>Ya existe una especialidad con ese nombre</value>
+  </data>
+  <data name="TOO_MANY_REQUESTS" xml:space="preserve">
+    <value>Demasiadas solicitudes. Intente nuevamente más tarde.</value>
   </data>
   <data name="UNHANDLED_ERROR" xml:space="preserve">
     <value>Se produjo un error no controlado</value>

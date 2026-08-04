@@ -16,4 +16,6 @@ public interface IPersistence
     Task<T?> FirstIgnoringFilters<T>(Expression<Func<T, bool>> predicate) where T : EntityBase;
     Task ExecuteInTransaction(Func<Task> operations);
     Task<IEnumerable<T>> AddRange<T>(IEnumerable<T> entities) where T : EntityBase;
+    Task UpdateRange<T>(IEnumerable<T> entities) where T : EntityBase;
+    Task<IEnumerable<T>> GetFilteredIgnoringFilters<T>(Expression<Func<T, bool>> predicate) where T : EntityBase;
 }

@@ -1,5 +1,7 @@
-﻿using System.Text.Json;
+﻿using Dsw2026Tpi.Data.Options;
 using Dsw2026Tpi.Domain.Interfaces;
+using System.Text.Json;
+using Dsw2026Tpi.Data.Options;
 
 namespace Dsw2026Tpi.Data;
 
@@ -9,8 +11,9 @@ public class HolidayService : IHolidayService
 
     public HolidayService(string jsonPath)
     {
-        var json = File.ReadAllText(jsonPath);
-        var items = JsonSerializer.Deserialize<List<HolidayDto>>(json) ?? [];
+        var fullPath = Path.Combine(AppContext.BaseDirectory, jsonPath);
+        var json = File.ReadAllText(fullPath);
+        var items = JsonSerializer.Deserialize<List<HolidayDto>>(json, JsonOptions.JsonSerializerOptions) ?? [];
         _holidays = items.Select(x => DateOnly.Parse(x.Date)).ToHashSet();
     }
 
