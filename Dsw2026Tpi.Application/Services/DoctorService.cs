@@ -29,7 +29,7 @@ public class DoctorService : IDoctorService
     {
         Validate(request);
 
-        var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
+        var speciality = await _persistence.GetById<Speciality>(request.SpecialtyId);
         if (speciality == null)
         {
             throw new EntityNotFoundException(nameof(Speciality));
@@ -53,7 +53,7 @@ public class DoctorService : IDoctorService
             throw new EntityNotFoundException(nameof(Doctor));
         }
 
-        var speciality = await _persistence.GetById<Speciality>(request.SpecialityId);
+        var speciality = await _persistence.GetById<Speciality>(request.SpecialtyId);
         if (speciality == null)
         {
             throw new EntityNotFoundException(nameof(Speciality));
@@ -100,8 +100,6 @@ public class DoctorService : IDoctorService
         )).ToList();
     }
 
-
-
     private static void Validate(DoctorModel.Request request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)
@@ -112,12 +110,9 @@ public class DoctorService : IDoctorService
     }
 
 
-
-
     private static DoctorModel.Response ToResponse(Doctor doctor)
         => new(doctor.Id, doctor.Name, doctor.LicenseNumber,
-            new DoctorModel.SpecialityDto(doctor.Speciality?.Id, doctor.Speciality?.Name));
-
+            new DoctorModel.SpecialtyDto(doctor.Speciality?.Id, doctor.Speciality?.Name));
 
     private static string ToSpanishDay(DayOfWeek dayOfWeek) => dayOfWeek switch
     {
