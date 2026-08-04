@@ -10,7 +10,6 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        // Inicializar con un logger simple antes de construir el host
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateBootstrapLogger();
@@ -21,13 +20,13 @@ public class Program
 
             var builder = WebApplication.CreateBuilder(args);
 
-            //Configuraciones personalizadas
             builder.AddSerilogConfiguration();
             builder.Services.AddAppIdentity();
             builder.Services.AddAppAuthentication(builder.Configuration);
             builder.Services.AddSwaggerConfiguration();
             builder.Services.AddApplicationPersistence(builder.Configuration);
             builder.Services.AddAppCors(builder.Configuration);
+            builder.Services.AddAppRateLimiting(builder.Configuration);
             builder.Services.AddAppDependencies();
             builder.Services.AddControllers();
             builder.Services.AddHealthChecks();
@@ -46,6 +45,7 @@ public class Program
                 app.UseSwaggerUI();
             }
 
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();
