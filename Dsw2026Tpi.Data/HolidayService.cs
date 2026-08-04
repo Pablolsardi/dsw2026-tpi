@@ -1,7 +1,6 @@
 ﻿using Dsw2026Tpi.Data.Options;
 using Dsw2026Tpi.Domain.Interfaces;
 using System.Text.Json;
-using Dsw2026Tpi.Data.Options;
 
 namespace Dsw2026Tpi.Data;
 
