@@ -28,7 +28,7 @@ public class AuthenticationController : AppController
 
     [HttpPost("admin/login")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimitingConfigurationExtensions.LoginPolicy)]
+    [EnableRateLimiting(RateLimitingConfigurationExtensions.AdminLoginPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromBody] LoginAdminModel.Request request)
@@ -38,7 +38,7 @@ public class AuthenticationController : AppController
     }
     [HttpPost("patient/login")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimitingConfigurationExtensions.LoginPolicy)]
+    [EnableRateLimiting(RateLimitingConfigurationExtensions.PatientLoginPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
