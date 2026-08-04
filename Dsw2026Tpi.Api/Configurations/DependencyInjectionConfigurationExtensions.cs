@@ -18,9 +18,7 @@ public static class DependencyInjectionConfigurationExtensions
         services.AddScoped<ISpecialityService, SpecialityService>();
         services.AddSingleton<IHolidayService>(_ => new HolidayService("Sources\\holidays.json"));
         services.AddSingleton<JwtService>();
-        //services.AddScoped<IAvailabilityService, AvailabilityService>();
-        //Estan comentadas hasta traer lo de Sardi 
-        //services.AddScoped<IHolidayService, HolidayService>();
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
         return services;
     }
 }
