@@ -1,10 +1,12 @@
 ﻿using Dsw2026Tpi.Application.Dtos;
+using Dsw2026Tpi.Application.Helpers;
 using Dsw2026Tpi.Application.Interfaces;
 using Dsw2026Tpi.CrossCutting.Exceptions;
+using Dsw2026Tpi.CrossCutting.Resources;
 using Dsw2026Tpi.Domain.Entities;
 using Dsw2026Tpi.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Dsw2026Tpi.CrossCutting.Resources;
 
 namespace Dsw2026Tpi.Application.Services;
 
@@ -38,9 +40,11 @@ public class AvailabilityService : IAvailabilityService
         {
             foreach (var d in request.Days)
             {
-                DayOfWeek dow;
-                try { dow = AvailabilityHelper.ParseDay(d.Day); }
-                catch { errors.Add(("day", "invalid_day")); continue; }
+                if (!AvailabilityHelper.TryParseDay(d.Day, out var dow))
+                {
+                    errors.Add(("day", "invalid_day"));
+                    continue;
+                }
 
                 if (d.StartTime >= d.EndTime)
                 {
@@ -48,7 +52,7 @@ public class AvailabilityService : IAvailabilityService
                     continue;
                 }
 
-                if (!AvailabilityHelper.EsMultiploDe30(d.StartTime, d.EndTime))
+                if (!AvailabilityHelper.IsValidRange(d.StartTime, d.EndTime))
                 {
                     errors.Add(("startTime", "must_be_multiple_of_30"));
                     continue;
@@ -78,11 +82,11 @@ public class AvailabilityService : IAvailabilityService
 
         var ultimoDia = new DateOnly(anio, mes, DateTime.DaysInMonth(anio, mes));
 
-        var slotsExistentes = await _persistence.GetFilteredIgnoringFilters<AvailabilitySlot>(s =>
-            s.DoctorId == request.DoctorId && s.SlotDate >= hoy && s.SlotDate <= ultimoDia);
+        var slotsExistentes = (await _persistence.GetFilteredIgnoringFilters<AvailabilitySlot>(s =>
+            s.DoctorId == request.DoctorId && s.SlotDate >= hoy && s.SlotDate <= ultimoDia)).ToList();
 
         var indice = slotsExistentes.ToDictionary(s => (s.SlotDate, s.StartTime));
-       
+
         var reglasNuevas = new List<AvailabilityRule>();
         var reglasARestaurar = new List<AvailabilityRule>();
         var slotsNuevos = new List<AvailabilitySlot>();
@@ -104,11 +108,13 @@ public class AvailabilityService : IAvailabilityService
                 regla.Deleted = false;
                 reglasARestaurar.Add(regla);
             }
-            var bloques = AvailabilityHelper.Bloques(p.Start, p.End);
-            foreach (var fecha in AvailabilityHelper.FechasDelMes(p.Day))
+
+            var bloques = AvailabilityHelper.GetSlots(p.Start, p.End);
+
+            foreach (var fecha in AvailabilityHelper.GetDatesInMonth(p.Day, hoy))
             {
                 if (fecha < hoy) continue;
-                if (_holidayService.EsFeriado(fecha)) continue;
+                if (_holidayService.IsHoliday(fecha)) continue;
 
                 foreach (var b in bloques)
                 {
@@ -124,6 +130,7 @@ public class AvailabilityService : IAvailabilityService
                 }
             }
         }
+
         var slotsABorrar = overwrite
             ? slotsExistentes.Where(s => !s.Deleted
                     && s.Status == SlotStatus.Available
@@ -131,13 +138,13 @@ public class AvailabilityService : IAvailabilityService
                     && !targetKeys.Contains((s.SlotDate, s.StartTime)))
                 .ToList()
             : new List<AvailabilitySlot>();
-        
+
         var reglasABorrar = overwrite
             ? reglasExistentes.Where(r => !r.Deleted
                     && !parsed.Any(p => p.Day == r.DayOfWeek && p.Start == r.StartTime && p.End == r.EndTime))
                 .ToList()
             : new List<AvailabilityRule>();
-        
+
         foreach (var s in slotsABorrar) s.Deleted = true;
         foreach (var r in reglasABorrar) r.Deleted = true;
 
@@ -160,17 +167,22 @@ public class AvailabilityService : IAvailabilityService
                     await _persistence.UpdateRange(slotsAActualizar);
             });
         }
-        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        catch (DbUpdateException)
         {
             throw new ConflictException(nameof(ErrorCodes.AVAILABILITY_CONFLICT), ErrorCodes.AVAILABILITY_CONFLICT);
         }
-                _logger.LogInformation(
+
+        _logger.LogInformation(
             "Disponibilidad {Modo} para doctor {DoctorId}: {Nuevos} slots creados, {Borrados} liberados",
             overwrite ? "actualizada" : "creada", request.DoctorId, slotsNuevos.Count, slotsABorrar.Count);
+
+        var diasResponse = parsed
+            .Select(p => new AvailabilityModel.DayDto(AvailabilityHelper.FormatDay(p.Day), p.Start, p.End))
+            .ToList();
 
         return new AvailabilityModel.Response(
             request.DoctorId, mes, anio,
             slotsNuevos.Count + slotsARestaurar.Count,
-            request.Days);
+            diasResponse);
     }
 }
