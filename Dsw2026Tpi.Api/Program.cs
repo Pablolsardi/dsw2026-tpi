@@ -46,8 +46,8 @@ public class Program
                 app.UseSwaggerUI();
             }
 
-            app.UseRateLimiter();
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseAuthorization();
             app.UseCors();
 
