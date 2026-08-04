@@ -33,6 +33,7 @@ public class Program
 
             var app = builder.Build();
             await app.SeedAdminUser();
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseSerilogRequestLogging();
 
             if (app.Environment.IsProduction())
@@ -49,7 +50,6 @@ public class Program
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseCors();
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.MapControllers();
             app.MapHealthChecks("/health-check");
