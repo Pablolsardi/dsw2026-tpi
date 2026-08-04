@@ -22,24 +22,27 @@ public class AppointmentService : IAppointmentService
     {
         var dniString = dni.ToString();
 
-        var includes = new[]
-        {
+        var appointments = (await _persistence.GetFiltered<Appointment>(
+            a => a.Patient != null && a.Patient.Dni == dniString && a.Status == AppointmentStatus.Booked,
             nameof(Appointment.Patient),
-            nameof(Appointment.AvailabilitySlot),
-            "AvailabilitySlot.AvailabilityRule",
-            "AvailabilitySlot.AvailabilityRule.Doctor",
-            "AvailabilitySlot.AvailabilityRule.Doctor.Speciality"
-        };
+            nameof(Appointment.AvailabilitySlot)))?.ToList() ?? new List<Appointment>();
 
-        var appointments = await _persistence.GetFiltered<Appointment>(
-    a => a.Patient != null && a.Patient.Dni == dniString && a.Status == AppointmentStatus.Booked,
-    includes);
+        if (appointments.Count == 0) return Array.Empty<AppointmentModel.Response>();
 
-        if (appointments == null) return Array.Empty<AppointmentModel.Response>();
+        var doctorIds = appointments
+            .Where(a => a.AvailabilitySlot is not null)
+            .Select(a => a.AvailabilitySlot!.DoctorId)
+            .Distinct()
+            .ToList();
+
+        var doctores = (await _persistence.GetFiltered<Doctor>(
+            d => doctorIds.Contains(d.Id), nameof(Doctor.Speciality)))?.ToList() ?? new List<Doctor>();
+
+        var porId = doctores.ToDictionary(d => d.Id);
 
         return appointments
-            .Where(a => a.AvailabilitySlot != null && a.AvailabilitySlot.AvailabilityRule != null && a.AvailabilitySlot.AvailabilityRule.Doctor != null)
-            .Select(a => ToResponse(a, a.AvailabilitySlot!, a.AvailabilitySlot!.AvailabilityRule!.Doctor!))
+            .Where(a => a.AvailabilitySlot is not null && porId.ContainsKey(a.AvailabilitySlot.DoctorId))
+            .Select(a => ToResponse(a, a.AvailabilitySlot!, porId[a.AvailabilitySlot!.DoctorId]))
             .ToList();
     }
     public async Task Cancel(Guid id)
