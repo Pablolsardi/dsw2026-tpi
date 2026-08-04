@@ -115,7 +115,7 @@ public class AuthenticationService : IAuthenticationService
         var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         var token = _jwtService.GenerateToken(user.UserName!, role);
         _logger.LogInformation("Login de paciente exitoso: {Email}", request.Email);
-        return new LoginPatientModel.Response(token, role);
+        return new LoginPatientModel.Response(token, role?.ToUpperInvariant());
     }
 
     public async Task<RegisterModel.Response> Register(RegisterModel.Request request)

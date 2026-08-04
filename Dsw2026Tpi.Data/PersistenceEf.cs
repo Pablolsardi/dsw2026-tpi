@@ -137,4 +137,14 @@ public class PersistenceEf: IPersistence
         }
         return includedQuery;
     }
+    public async Task UpdateRange<T>(IEnumerable<T> entities) where T : EntityBase
+    {
+        _context.UpdateRange(entities);
+        await _context.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<T>> GetFilteredIgnoringFilters<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
+    {
+        return await _context.Set<T>().IgnoreQueryFilters().Where(predicate).ToListAsync();
+    }
+
 }
