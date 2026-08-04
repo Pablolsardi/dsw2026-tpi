@@ -17,7 +17,9 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
         builder.Property(a => a.RowVersion).IsRowVersion();
 
 
-        builder.HasIndex(a => a.AvailabilitySlotId).IsUnique();
+        builder.HasIndex(a => a.AvailabilitySlotId)
+       .IsUnique()
+       .HasFilter("[Status] = 'Booked' AND [Deleted] = 0");
 
         builder.HasQueryFilter(a => !a.Deleted);
     }
