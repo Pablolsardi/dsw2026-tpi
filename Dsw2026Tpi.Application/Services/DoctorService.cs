@@ -86,7 +86,7 @@ public class DoctorService : IDoctorService
             throw new EntityNotFoundException(nameof(Doctor));
         }
 
-        var hoy = DateTime.UtcNow;
+        var hoy = DateTime.Now;
         var rules = await _persistence.GetFiltered<AvailabilityRule>(
             r => r.DoctorId == id && r.Month == (byte)hoy.Month && r.Year == (short)hoy.Year);
 
