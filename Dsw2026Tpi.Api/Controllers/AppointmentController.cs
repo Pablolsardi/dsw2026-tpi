@@ -38,6 +38,34 @@ public class AppointmentController : AppController
     public async Task<IActionResult> Cancel(Guid id)
     {
         await _service.Cancel(id);
-        return Ok("Ok");
+        return Ok("ok");
+    }
+
+    [HttpGet]
+    [Authorize(Policy = Policies.AdminPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetByDate(
+        [FromQuery] DateOnly? date,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int pageIndex = 1)
+    {
+        var result = await _service.GetByDate(date, pageSize, pageIndex);
+        return Ok(result);
+    }
+
+    [HttpGet("search")]
+    [Authorize(Policy = Policies.AdminPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Search(
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] Guid? specialtyId = null,
+        [FromQuery] Guid? doctorId = null,
+        [FromQuery] long? dni = null,
+        [FromQuery] DateOnly? date = null)
+    {
+        var result = await _service.Search(specialtyId, doctorId, dni, date, pageSize, pageIndex);
+        return Ok(result);
     }
 }

@@ -16,4 +16,13 @@ public record AppointmentModel
         string? Speciality,
         string Status,
         string Reason);
+    public record AdminResponse(
+        Guid AppointmentsId,
+        string AppointmentStatus,
+        PatientSummary Patient,
+        DoctorSummary Doctor
+        );
+    public record PatientSummary(long Dni, string? FullName);
+    public record DoctorSummary(Guid DoctorId, string? FullName, SpecialtySummary? Specialty);
+    public record SpecialtySummary(Guid SpecialyId, string Name);
 }
