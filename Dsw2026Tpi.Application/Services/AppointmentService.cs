@@ -145,4 +145,4 @@ public class AppointmentService : IAppointmentService
         _ => status.ToString().ToUpperInvariant()
     };
 
-}
+} 
