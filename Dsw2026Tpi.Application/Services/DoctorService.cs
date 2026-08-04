@@ -100,6 +100,34 @@ public class DoctorService : IDoctorService
         )).ToList();
     }
 
+    public async Task<IEnumerable<DoctorModel.SlotResponse>> GetSlots(Guid id, DateOnly? date)
+    {
+        var doctor = await _persistence.GetById<Doctor>(id);
+        if (doctor == null)
+        {
+            throw new EntityNotFoundException(nameof(Doctor));
+        }
+
+        var hoy = DateOnly.FromDateTime(DateTime.Now);
+
+        var slots = await _persistence.GetFiltered<AvailabilitySlot>(s =>
+            s.DoctorId == id &&
+            s.Status == SlotStatus.Available &&
+            s.SlotDate >= hoy &&
+            (date == null || s.SlotDate == date));
+
+        if (slots == null) return Array.Empty<DoctorModel.SlotResponse>();
+
+        return slots
+            .OrderBy(s => s.SlotDate).ThenBy(s => s.StartTime)
+            .Select(s => new DoctorModel.SlotResponse(
+                s.Id,
+                s.SlotDate,
+                s.StartTime.ToString("HH:mm"),
+                s.EndTime.ToString("HH:mm")))
+            .ToList();
+    }
+
     private static void Validate(DoctorModel.Request request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length < 3 || request.Name.Length > 100)

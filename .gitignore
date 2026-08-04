@@ -363,3 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .atl/
+
+UpgradeLog.htm
+UpgradeLog*.htm
+_UpgradeReport_Files/
+Backup*/

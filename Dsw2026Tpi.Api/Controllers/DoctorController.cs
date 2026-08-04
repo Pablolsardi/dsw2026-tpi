@@ -67,4 +67,13 @@ public class DoctorController : AppController
         var result = await _service.GetAvailabilities(id);
         return Ok(result);
     }
+
+    [HttpGet("{id}/slots")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSlots([FromRoute] Guid id, [FromQuery] DateOnly? date = null)
+    {
+        var result = await _service.GetSlots(id, date);
+        return Ok(result);
+    }
 }

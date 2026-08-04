@@ -6,4 +6,5 @@ public record DoctorModel
     public record Response(Guid Id, string Name, string? LicenseNumber, SpecialtyDto? Specialty);
     public record SpecialtyDto(Guid? Id, string? Name);
     public record AvailabilityResponse(Guid Id, string Day, string StartTime, string EndTime);
+    public record SlotResponse(Guid Id, DateOnly Date, string StartTime, string EndTime);
 }

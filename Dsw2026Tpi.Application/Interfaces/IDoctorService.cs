@@ -14,4 +14,5 @@ public interface IDoctorService
     Task Delete(Guid id);
 
     Task<IEnumerable<DoctorModel.AvailabilityResponse>> GetAvailabilities(Guid id);
+    Task<IEnumerable<DoctorModel.SlotResponse>> GetSlots(Guid id, DateOnly? date);
 }
