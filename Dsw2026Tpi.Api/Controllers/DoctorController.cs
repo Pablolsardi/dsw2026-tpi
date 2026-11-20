@@ -20,9 +20,13 @@ public class DoctorController : AppController
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] int pageSize = 10, [FromQuery] int pageIndex = 1, [FromQuery] string? name = null)
+    public async Task<IActionResult> GetAll(
+    [FromQuery] int pageSize = 10,
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] string? name = null,
+    [FromQuery] Guid? specialtyId = null)
     {
-        var doctors = await _service.GetAll(pageSize, pageIndex, name);
+        var doctors = await _service.GetAll(pageSize, pageIndex, name, specialtyId);
         return Ok(doctors);
     }
 
