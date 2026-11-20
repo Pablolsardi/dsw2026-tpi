@@ -134,6 +134,9 @@ public class AppointmentService : IAppointmentService
         return new AppointmentModel.AdminResponse(
             appointment.Id,
             ToStatusText(appointment.Status),
+            slot.SlotDate,
+            slot.StartTime,
+            slot.EndTime,
             new AppointmentModel.PatientSummary(dni, appointment.Patient?.FullName),
             new AppointmentModel.DoctorSummary(doctor.Id, doctor.Name, specialty));
     }

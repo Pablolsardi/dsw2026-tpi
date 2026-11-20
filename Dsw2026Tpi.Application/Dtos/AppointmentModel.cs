@@ -19,6 +19,9 @@ public record AppointmentModel
     public record AdminResponse(
         Guid AppointmentsId,
         string AppointmentsStatus,
+        DateOnly Date,
+        TimeOnly StartTime,
+        TimeOnly EndTime,
         PatientSummary Patient,
         DoctorSummary Doctor
         );
