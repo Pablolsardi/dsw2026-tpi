@@ -9,12 +9,13 @@ namespace Dsw2026Tpi.Application.Services;
 public class JwtService
 {
     private readonly IConfiguration _config;
+    public const string DniClaim = "dni";
     public JwtService(IConfiguration config)
     {
         _config = config;
     }
 
-    public string GenerateToken(string username, string? role)
+    public string GenerateToken(string username, string? role, string? dni = null)
     {
         if (_config == null) throw new ArgumentNullException();
         var jwtConfig = _config.GetSection("Jwt");
@@ -25,12 +26,16 @@ public class JwtService
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiresIn = int.Parse(jwtConfig["ExpiresInMinutes"] ?? "60");
 
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, role ?? string.Empty)
-        };
+        var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, username),
+        new Claim(ClaimTypes.Name, username),
+        new Claim(ClaimTypes.Role, role ?? string.Empty)
+    };
+
+        // Solo los pacientes tienen DNI
+     if (!string.IsNullOrEmpty(dni))
+        claims.Add(new Claim(DniClaim, dni));
 
         var token = new JwtSecurityToken(
             issuer: issuer,
