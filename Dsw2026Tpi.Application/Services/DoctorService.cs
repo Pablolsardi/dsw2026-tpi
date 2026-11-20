@@ -16,10 +16,12 @@ public class DoctorService : IDoctorService
         _persistence = persistence;
     }
 
-    public async Task<Pagination<DoctorModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null)
+    public async Task<Pagination<DoctorModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null, Guid? specialtyId = null)
     {
-        var doctors = await _persistence.Paginate<Doctor, string>(pageSize, pageIndex, d => string.IsNullOrWhiteSpace(name) ||
-                                                   d.Name.Contains(name), x => x.Name, nameof(Doctor.Speciality));
+        var doctors = await _persistence.Paginate<Doctor, string>(pageSize, pageIndex,
+            d => (string.IsNullOrWhiteSpace(name) || d.Name.Contains(name)) &&
+                 (specialtyId == null || d.SpecialityId == specialtyId),
+            x => x.Name, nameof(Doctor.Speciality));
 
         return doctors.Map(ToResponse);
     }

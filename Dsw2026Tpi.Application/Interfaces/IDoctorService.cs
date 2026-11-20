@@ -5,7 +5,7 @@ namespace Dsw2026Tpi.Application.Interfaces;
 
 public interface IDoctorService
 {
-    Task<Pagination<DoctorModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null);
+    Task<Pagination<DoctorModel.Response>> GetAll(int pageSize, int pageIndex, string? name = null, Guid? specialtyId = null);
 
     Task<DoctorModel.Response> Create(DoctorModel.Request request);
 

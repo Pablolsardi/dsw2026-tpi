@@ -25,7 +25,7 @@ public class AppointmentController : AppController
     public async Task<IActionResult> Create([FromBody] AppointmentModel.Request request)
     {
         var result = await _service.Create(request);
-        return StatusCode(StatusCodes.Status201Created, result);
+            return StatusCode(StatusCodes.Status201Created, result);
     }
 
     [HttpGet("patient")]

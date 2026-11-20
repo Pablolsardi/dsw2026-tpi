@@ -21,8 +21,8 @@ public static class IdentitySeedConfigurationExtensions
         {
             UserName = email,
             Email = email,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
         };
 
         var result = await userManager.CreateAsync(admin, password);
