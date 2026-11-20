@@ -141,12 +141,15 @@ public class AppointmentService : IAppointmentService
             new AppointmentModel.DoctorSummary(doctor.Id, doctor.Name, specialty));
     }
 
-    
-    public async Task Cancel(Guid id)
+
+    public async Task Cancel(Guid id, long patientDni)
     {
-        var appointment = await _persistence.GetById<Appointment>(id);
+        var appointment = await _persistence.GetById<Appointment>(id, nameof(Appointment.Patient));
         if (appointment == null)
             throw new EntityNotFoundException(nameof(Appointment));
+        // Solo el dueño del turno lo puede cancelar
+        if (appointment.Patient?.Dni != patientDni.ToString())
+            throw new AuthorizationException();
         if (appointment.Status != AppointmentStatus.Booked)
             throw new BusinessRuleException(nameof(ErrorCodes.APPOINTMENT_CANCEL_INVALID), ErrorCodes.APPOINTMENT_CANCEL_INVALID);
         var slot = await _persistence.GetById<AvailabilitySlot>(appointment.AvailabilitySlotId)

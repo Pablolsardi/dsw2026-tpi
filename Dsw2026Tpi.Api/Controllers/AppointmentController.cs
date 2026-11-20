@@ -24,15 +24,17 @@ public class AppointmentController : AppController
     [EnableRateLimiting(RateLimitingConfigurationExtensions.AppointmentBookingPolicy)]
     public async Task<IActionResult> Create([FromBody] AppointmentModel.Request request)
     {
-        var result = await _service.Create(request);
-            return StatusCode(StatusCodes.Status201Created, result);
+        // Se pisa el DNI del body con el del token: no se puede reservar a nombre de otro
+        var safeRequest = request with { Patient = new AppointmentModel.PatientDto(GetPatientDni()) };
+        var result = await _service.Create(safeRequest);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 
     [HttpGet("patient")]
     [Authorize(Policy = Policies.PatientPolicy)]
-    public async Task<IActionResult> GetByPatientDni([FromQuery] long dni)
+    public async Task<IActionResult> GetByPatientDni()   // ya no recibe ?dni=
     {
-        var result = await _service.GetByPatientDni(dni);
+        var result = await _service.GetByPatientDni(GetPatientDni());
         return Ok(result);
     }
 
@@ -40,7 +42,7 @@ public class AppointmentController : AppController
     [Authorize(Policy = Policies.PatientPolicy)]
     public async Task<IActionResult> Cancel(Guid id)
     {
-        await _service.Cancel(id);
+        await _service.Cancel(id, GetPatientDni());
         return Ok("ok");
     }
 
